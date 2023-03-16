@@ -2,7 +2,6 @@ package sample;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
@@ -28,7 +27,7 @@ public class Controlador {
     @FXML
     private Button botonEmpezar;
 
-    private Node[][] matrizCeldas = null;
+    private Celda[][] listaDeBotones;
 
 
     @FXML
@@ -42,7 +41,7 @@ public class Controlador {
 
             for (int j = 0;j < numColumnas;j ++){
 
-                Cuadro celda = new Cuadro();
+                Celda celda = new Celda();
 
                 celda.setCantidadMinas(10);
 
@@ -54,14 +53,16 @@ public class Controlador {
                 celda.setOnAction(e -> estarMinado(e,celda));
 
 
+
                 panelCeldas.add(celda,i,j);
 
 
 
             }
         }
-        iniciarMatriz();
-        //System.out.println(matrizCeldas);
+        //iniciarMatriz();
+
+
 
     }
 
@@ -75,19 +76,23 @@ public class Controlador {
         int numColumnas = 8;
 
         //Se crea el gridpane
+        /*/
         this.matrizCeldas = new Node[numFilas][numColumnas];
         for (Node node : this.panelCeldas.getChildren()){
             this.matrizCeldas[GridPane.getRowIndex(node)][GridPane.getColumnIndex(node)] = node;
-        }
+        }*/
+
 
     }
 
 
 
-    void estarMinado(ActionEvent event,Cuadro celda){
+    void estarMinado(ActionEvent event, Celda celda){
+
         if (celda.getterHayMina()){
             int filaTemp = 0;
             int columnaTemp = 0;
+            celda.setStyle("-fx-background-color: #ff0000");
 
             /*for (int i = 0; i < panelCeldas.getRowCount();i ++){
                 for (int j = 0; j < panelCeldas.getColumnCount();j++){
