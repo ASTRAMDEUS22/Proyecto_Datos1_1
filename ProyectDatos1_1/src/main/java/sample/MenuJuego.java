@@ -1,6 +1,7 @@
 package sample;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -35,7 +36,8 @@ public class MenuJuego extends Application {
 
         //Botones
         empezarJuego = new Button();
-        empezarJuego.setOnAction(e -> ejecutarPanelJuego());
+        empezarJuego.setOnAction(e ->
+            ejecutarPanelJuego(seleccionDificultad.getValue()));
 
         //Labels
         labelTitulo = new Label();
@@ -45,6 +47,10 @@ public class MenuJuego extends Application {
 
         //Combobox
         seleccionDificultad = new ComboBox<>();
+        seleccionDificultad.getItems().addAll(
+                "Dummy",
+                "Avanced"
+        );
         seleccionDificultad.setTranslateX(70);
         seleccionDificultad.setTranslateY(0);
 
@@ -73,9 +79,11 @@ public class MenuJuego extends Application {
 
     }
 
-    public void ejecutarPanelJuego(){
+
+
+    public void ejecutarPanelJuego(String dificultad){
         Juego juego = new Juego();
-        juego.elementosInterfaz();
+        juego.elementosInterfaz(dificultad);
     }
 
     public static void main(String[] args) {

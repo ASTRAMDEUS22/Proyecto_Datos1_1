@@ -5,6 +5,24 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class TableroJuego {
+
+    /**
+     * Constructor de la clase TableroJuego.
+     * @param cantidadMinas El total de minas que se van a generar en el tablero.
+     * @param dificultad Según la dificultad deseada, se ejecutará un algoritmo de dificultad.
+     */
+    public TableroJuego(int cantidadMinas,String dificultad) {
+        //Cantidad de minas
+        this.cantidadMinas = cantidadMinas;
+    }
+
+    //Instancia del Objeto para acceder al escenario
+    Juego ventanaJuego = new Juego();
+
+    //Turnos
+    boolean jugadorTurno = true;
+    boolean botTurno = false;
+
     //Cantidad de minas
     int cantidadMinas;
 
@@ -20,20 +38,10 @@ public class TableroJuego {
     Celda[][] matrizBot = new Celda[numFilas][numColumnas];
 
     /**
-     * Constructor de la clase TableroJuego.
-     * @param cantidadMinas El total de minas que se van a generar en el tablero.
-     */
-    public TableroJuego(int cantidadMinas) {
-        //Cantidad de minas
-        this.cantidadMinas = cantidadMinas;
-    }
-
-    /**
      * crea la matriz y le añade los objetos de tipo celda.
-     * @param canva es donde los objetos creados serán añadidos.
-     * @param escenario se envia el stage del Juego permitiendo poder cerrar esa ventana en caso de haber una mina en las casillas, enviando al usuario al menú.
+     *
      */
-    void crearPanelJuego(StackPane canva, Stage escenario) {
+    void crearPanelJuego(StackPane canva) {
         int xCoordsP1 = -400;
         int yCoordsP1 = -100;
 
@@ -43,6 +51,12 @@ public class TableroJuego {
         for (int i = 0; i < numFilas; i++) {
 
             for (int j = 0; j < numColumnas; j++) {
+
+                if (matrizJugador[i][j] != null && matrizBot[i][j] != null){
+                    matrizJugador[i][j].setVisible(false);
+                    matrizBot[i][j].setVisible(false);
+                }
+
                 //Creación del tablero del jugador
                 Celda celdaP1 = new Celda();
                 Celda celdaP2 = new Celda();
@@ -55,7 +69,7 @@ public class TableroJuego {
                 celdaP1.setTranslateY(yCoordsP1);
                 celdaP1.setStyle("-fx-border-color: black");
 
-                celdaP1.setOnAction(e -> estarMinado(e, celdaP1,escenario));
+                celdaP1.setOnAction(e -> estarMinado(e, celdaP1,ventanaJuego.getStage()));
 
                 //Caracteristicas PanelBot
                 celdaP2.setMinWidth(40);
@@ -66,7 +80,7 @@ public class TableroJuego {
                 celdaP2.setStyle("-fx-border-color: black");
                 celdaP2.setIdentificador(celdaP1.getIdentificador());
 
-                celdaP2.setOnAction(e -> estarMinado(e, celdaP2,escenario));
+                celdaP2.setOnAction(e -> estarMinado(e, celdaP2,ventanaJuego.getStage()));
 
                 matrizJugador[i][j] = celdaP1;
                 matrizBot[i][j] = celdaP2;
@@ -98,7 +112,6 @@ public class TableroJuego {
         //Mientras hayan menos minas de las necesitadas mantenga el bucle
         while (minasGeneradas < numMinas){
 
-
             for (int i = 0;i < numFilas;i++) {
                 for (int j = 0; j < numColumnas; j++) {
 
@@ -109,7 +122,7 @@ public class TableroJuego {
                     //Genera un numero aleatorio
                     double numRandom = Math.random();
 
-                    //Mientras el numero generado sea mayor al especificado, crear una mina
+                    //Mientras el número generado sea mayor al especificado, crear una mina
                     if (numRandom >= 0.8) {
 
                         matrizJugador[i][j].setIdentificador(-1);
@@ -131,27 +144,83 @@ public class TableroJuego {
 
     }
 
-
     /**
      * Identifica si la celda está limpia o minada, en caso de estar minada termina el juego, si no, cambia el color de la celda.
      * @param event captura la accion del boton.
      * @param celda objeto que será añadido a la matriz.
+     * @param escenario Es el escenario del Objeto Juego, con él se puede cerrar la ventana
      */
     public void estarMinado(ActionEvent event, Celda celda, Stage escenario) {
         //Si la celda es una Mina avisar que se ha perdido el juego
         if (celda.getIdentificador() == -1) {
             celda.setStyle("-fx-background-color: #ff0000");
             celda.setText("*");
-            VentanaPerder.display(escenario);  //Si se pisa una mina se muestra una alerta y se cierra el juego
+
+            sufrirDerrota(escenario);
+
 
         } else {
-            //celda.setStyle("-fx-background-color: #00A7FF");
-
+            celda.setStyle("-fx-background-color: #00ff23");
+            definirTurnos();
         }
     }
 
     /**
-     * Crea las pistas en la matriz identificando el número de minas alrededor de la celda objetivo.
+     * Ejecuta la pantalla derrota.
+     * @param escenario es el Stage del Objeto Juego, permitiendo así cerrar el juego.
+     */
+    public void sufrirDerrota(Stage escenario){
+        VentanaPerder.display(escenario);  //Si se pisa una mina se muestra una alerta y se cierra el juego
+    }
+
+    /**
+     * Selecciona una casilla aleatoria de la matriz y selecciona esa Celda
+     */
+    public void algoritmoDummyBot(){
+
+        int iRandom = (int)((Math.random() * (7))+0);  //Indice i aleatorio
+        int jRandom = (int)((Math.random() * (7))+0);  //Indice j aleatorio
+
+        matrizBot[iRandom][jRandom].fire();
+
+    }
+
+    /**
+     * Define los turnos del jugador y la máquina según cada uno selecciona una celda
+     */
+    public void definirTurnos(){
+        System.out.println(jugadorTurno);
+        System.out.println(botTurno);
+        if (jugadorTurno){  //Si es el turno del jugador, desactive la matriz del bot
+            for (int i = 0;i<numFilas;i++){
+                for (int j = 0;j < numColumnas;j++){
+
+                    matrizBot[i][j].setDisable(true);
+                    matrizJugador[i][j].setDisable(false);
+
+                    jugadorTurno = false;
+                    botTurno = true;
+                }
+            }
+        }else {  //Si es el turno del bot, desactive la matriz del jugador
+            for (int i = 0;i<numFilas;i++) {
+                for (int j = 0; j < numColumnas; j++) {
+
+                    matrizJugador[i][j].setDisable(true);
+                    matrizBot[i][j].setDisable(false);
+
+                    jugadorTurno = true;
+                    botTurno = false;
+
+                }
+            }
+            algoritmoDummyBot();  //Despues de asignarse los valores boolean, se llama al bot
+        }
+
+    }
+
+    /**
+     * Crea las pistas en la matriz identificando el número de minas alrededor de la celda.
      */
     public void crearPistas() {
 
@@ -243,5 +312,4 @@ public class TableroJuego {
             }
         }
     }
-
 }
