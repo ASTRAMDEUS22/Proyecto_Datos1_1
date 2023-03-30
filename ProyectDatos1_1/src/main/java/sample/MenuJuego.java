@@ -1,7 +1,6 @@
 package sample;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -24,7 +23,7 @@ public class MenuJuego extends Application {
     Label labelTitulo;
 
     //Caja de texto
-    TextField numeroDeMinas;
+    TextField textoNumeroDeMinas;
 
 
 
@@ -36,8 +35,10 @@ public class MenuJuego extends Application {
 
         //Botones
         empezarJuego = new Button();
+        empezarJuego.setText("Empezar");
         empezarJuego.setOnAction(e ->
-            ejecutarPanelJuego(seleccionDificultad.getValue()));
+            ejecutarPanelJuego());
+
 
         //Labels
         labelTitulo = new Label();
@@ -51,23 +52,23 @@ public class MenuJuego extends Application {
                 "Dummy",
                 "Avanced"
         );
-        seleccionDificultad.setTranslateX(70);
-        seleccionDificultad.setTranslateY(0);
+        seleccionDificultad.setTranslateX(0);
+        seleccionDificultad.setTranslateY(-50);
 
         //TextField
-        //CUADROS DE TEXTO
-        numeroDeMinas = new TextField();  //Instancia de la caja de texto
-        numeroDeMinas.setTranslateX(0);  //Coords en X
-        numeroDeMinas.setTranslateY(-100.0);  //Coords en Y
-        numeroDeMinas.setMaxWidth(100);  //Tamaño del cuadro
-        numeroDeMinas.setPromptText("Cantidad de minas");
+        textoNumeroDeMinas = new TextField();  //Instancia de la caja de texto
+        textoNumeroDeMinas.setPromptText("Cantidad de minas");
+        textoNumeroDeMinas.setMaxWidth(100);  //Tamaño del cuadro
+        textoNumeroDeMinas.setTranslateX(0);  //Coords en X
+        textoNumeroDeMinas.setTranslateY(-100.0);  //Coords en Y
+
 
         //Agregar elementos a la interfaz
         canva.getChildren().addAll(
                 empezarJuego,
                 labelTitulo,
                 seleccionDificultad,
-                numeroDeMinas);
+                textoNumeroDeMinas);
 
 
         Scene menuJuego = new Scene(canva,378,509);
@@ -81,10 +82,29 @@ public class MenuJuego extends Application {
 
 
 
-    public void ejecutarPanelJuego(String dificultad){
+    public void ejecutarPanelJuego(){
         Juego juego = new Juego();
-        juego.elementosInterfaz(dificultad);
-    }
+        String cantidadMinas,dificultad;
+
+        dificultad = seleccionDificultad.getValue();
+        cantidadMinas = textoNumeroDeMinas.getText();
+
+
+        try{
+            if (dificultad != null){
+                if (dificultad.equals("Dummy")) {
+                    juego.elementosInterfaz(dificultad, Integer.parseInt(cantidadMinas),0);
+                }else {
+                    juego.elementosInterfaz(dificultad, Integer.parseInt(cantidadMinas),1);
+                }
+            }else {
+                VentanaAlerta.display("Advertencia","Debes seleccionar una dificultad para el algoritmo");
+            }
+    }catch (NumberFormatException e){
+            VentanaAlerta.display("ERROR","Debes agregar un número de tipo Entero.");
+        }
+
+        }
 
     public static void main(String[] args) {
         launch(args);

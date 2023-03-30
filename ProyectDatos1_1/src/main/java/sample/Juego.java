@@ -1,9 +1,7 @@
 package sample;
 
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -17,8 +15,7 @@ public class Juego {
     //Definir objetos de la interfaz
 
     //Botones
-    Button empezarJuego,
-            empezarTemporizador;
+    Button empezarJuego;
 
     //Labels
     Label labelTotalMinas,
@@ -29,11 +26,6 @@ public class Juego {
 
     Stage stage = new Stage();
 
-    //Elementos del tiempo
-    int seg = 0;
-    int min = 0;
-    int limite = 1000;
-
 
 
     /**
@@ -41,9 +33,9 @@ public class Juego {
      * @param dificuldad Según la dificultad que seleccione el usuario, se enfrentará a un algoritmo más avanzado
      */
 
-    public void elementosInterfaz(String dificuldad) {
+    public void elementosInterfaz(String dificuldad,int cantidadMinas,int identificador) {
 
-        TableroJuego tableroJuego = new TableroJuego(10,dificuldad);
+        //
 
         //Creacion del canva donde se trabajará
         StackPane canva = new StackPane();
@@ -51,10 +43,7 @@ public class Juego {
         //Botones
         empezarJuego = new Button();
         empezarJuego.setText("Empezar");
-        empezarJuego.setOnAction(e -> {
-                    tableroJuego.crearPanelJuego(canva);
-                    ejecutarContador();
-                });
+        empezarJuego.setOnAction(e -> ejecutarJuego(canva,cantidadMinas,identificador));
         empezarJuego.setTranslateX(130);
         empezarJuego.setTranslateY(-200);
 
@@ -105,18 +94,29 @@ public class Juego {
     }
 
     //Ejecuta el Thread encargado del tiempo
-    public void ejecutarContador(){
-        //Se instancia el Thread
+    public void ejecutarContador() {
+
         Contador contador = new Contador(labelContSegundos,labelContMinutos);
-        //Se inicia el Thread
-        contador.start();
+
+        if (contador.isAlive()) {  //Esto no esta sirviendo ;_;
+            contador.interrupt();
+        } else {
+            //Se inicia el Thread
+            contador.start();
+        }
+    }
+
+    public void ejecutarJuego(StackPane canva,int cantidadMinas,int identificador){
+        TableroJuego tableroJuego = new TableroJuego(cantidadMinas,identificador);
+        tableroJuego.crearPanelJuego(canva,stage);
+        ejecutarContador();
     }
 
     //Devuelve el Stage correspondiente a este Objeto
     public Stage getStage() {
         return stage;
     }
-    
+
 
 }
 
