@@ -24,16 +24,17 @@ public class Juego {
             labelContMinutos,
             labelSeparador;
 
+    static Label labelCeldaClickBot;
+
     Stage stage = new Stage();
 
 
 
     /**
      * clase que carga la información en el archivo fxml dandole el diseño a la interfaz
-     * @param dificuldad Según la dificultad que seleccione el usuario, se enfrentará a un algoritmo más avanzado
      */
 
-    public void elementosInterfaz(String dificuldad,int cantidadMinas,int identificador) {
+    public void elementosInterfaz(int cantidadMinas,int identificador) {
 
         //
 
@@ -74,6 +75,11 @@ public class Juego {
         labelTotalMinas.setTranslateX(-300);
         labelTotalMinas.setTranslateY(-200);
 
+        labelCeldaClickBot = new Label();
+        //labelCeldaClickBot.setText("");
+        labelCeldaClickBot.setTranslateX(220);
+        labelCeldaClickBot.setTranslateY(-100);
+
 
         //Agregar elementos de java fx al canva
         canva.getChildren().addAll(
@@ -82,7 +88,8 @@ public class Juego {
                 labelTotalMinas,
                 labelContSegundos,
                 labelContMinutos,
-                labelSeparador
+                labelSeparador,
+                labelCeldaClickBot
 
         );
 
@@ -107,14 +114,40 @@ public class Juego {
     }
 
     public void ejecutarJuego(StackPane canva,int cantidadMinas,int identificador){
-        TableroJuego tableroJuego = new TableroJuego(cantidadMinas,identificador);
-        tableroJuego.crearPanelJuego(canva,stage);
-        ejecutarContador();
+
+        //Ejecuta la creación de un Panel u otro dependiendo de la dificultad
+        if (identificador == 0) {
+
+            //Instancia del tablero del jugador
+            Tablero tablero = new Tablero(cantidadMinas);
+
+            //Ejecución de la interfaz del tablero jugador
+            tablero.crearPanelJuego(canva, -150, -100);
+        }else {
+
+            //Instancia del tablero del jugador
+            Tablero tablero = new Tablero(cantidadMinas);
+
+            //Ejecucion de la interfaz del tablero jugador
+            tablero.crearPanelJuegoNodos(canva,-150,-100);
+
+
+        }
+
+
+
+        //Se ejecuta el tiempo
+        //ejecutarContador();
     }
 
     //Devuelve el Stage correspondiente a este Objeto
     public Stage getStage() {
         return stage;
+    }
+
+    //Metodo que actualiza el indicador de donde clickea el bot
+    public void setLabelCeldaClickBot(String texto){
+        labelCeldaClickBot.setText(texto);
     }
 
 

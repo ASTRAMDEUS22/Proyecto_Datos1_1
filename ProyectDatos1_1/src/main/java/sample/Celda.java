@@ -55,9 +55,9 @@ public class Celda extends Button {
      * Hace que el objeto Celda muestre de forma textual el valor total de Pistas que guarda.
      */
     public void revelarPista(){
-        if (numPistas != 0) {
+        //if (numPistas != 0) {
             setText(String.valueOf(numPistas));
-        }
+        //}
     }
 
     /**

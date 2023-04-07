@@ -11,7 +11,7 @@ public class TableroJuego {
      * @param cantidadMinas El total de minas que se van a generar en el tablero.
      *
      */
-    public TableroJuego(int cantidadMinas,int identificadorUniversal) {
+    public TableroJuego(int cantidadMinas, int identificadorUniversal) {
         //Cantidad de minas
         this.cantidadMinas = cantidadMinas;
         this.identificadorUniversal = identificadorUniversal;
@@ -38,6 +38,9 @@ public class TableroJuego {
 
     //Lista enlazada donde el algoritmo no pudo determinar la certeza de la existencia de una mina
     ListaEnlazada listaIncertidumbre = new ListaEnlazada();
+
+    //Instancia de la ventana Juego para cambiar el Label donde el bot esta clickeando
+    Juego juego = new Juego();
 
 
 
@@ -172,7 +175,7 @@ public class TableroJuego {
                     nodo.setDato(celda);
 
 
-                    listaEnlazadaElementosMatriz.insertarPrimero(nodo);
+                    listaEnlazadaElementosMatriz.insertarNodo(nodo);
 
 
                     matrizNodos[i][j] = nodo;
@@ -326,7 +329,6 @@ public class TableroJuego {
             }
         }
 
-
     }
 
     /**
@@ -365,9 +367,9 @@ public class TableroJuego {
             for (int j = 0;j < numColumnas;j++){
                 System.out.println("1");
                 if (!matrizNodos[i][j].getDato().isEstaRevelada()){  //Si la Celda en el Nodo no ha sido revelada, añadir a la lista
-                    listaGeneral.insertarPrimero(matrizNodos[i][j]);
+                    listaGeneral.insertarNodo(matrizNodos[i][j]);
                 }else {
-                    listaGeneral.eliminarNodo(matrizNodos[i][j],listaGeneral);  //Si la celda fue revelada, eliminarla de la lista
+                    listaGeneral.eliminarNodo(matrizNodos[i][j]);  //Si la celda fue revelada, eliminarla de la lista
                 }
             }
         }

@@ -6,6 +6,7 @@ public class Nodo {
     private Celda dato;
     //Al siguiente elemento que se va a apuntar
     private Nodo next;
+    private Nodo fin;
 
     //Constructor
     public Nodo() {
@@ -24,7 +25,7 @@ public class Nodo {
 
     //Devuelve a cual esta apuntando
     public Nodo getNext() {
-        return next;
+        return this.next;
     }
 
     //Se le asigna un nuevo apuntador
@@ -32,6 +33,11 @@ public class Nodo {
         this.next = next;
     }
 
+    public Nodo getFin() {
+        return fin;
+    }
 
-
+    public void setFin(Nodo fin) {
+        this.fin = fin;
+    }
 }

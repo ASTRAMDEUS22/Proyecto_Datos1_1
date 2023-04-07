@@ -93,9 +93,9 @@ public class MenuJuego extends Application {
         try{
             if (dificultad != null){
                 if (dificultad.equals("Dummy")) {
-                    juego.elementosInterfaz(dificultad, Integer.parseInt(cantidadMinas),0);
+                    juego.elementosInterfaz(Integer.parseInt(cantidadMinas),0);
                 }else {
-                    juego.elementosInterfaz(dificultad, Integer.parseInt(cantidadMinas),1);
+                    juego.elementosInterfaz(Integer.parseInt(cantidadMinas),1);
                 }
             }else {
                 VentanaAlerta.display("Advertencia","Debes seleccionar una dificultad para el algoritmo");
