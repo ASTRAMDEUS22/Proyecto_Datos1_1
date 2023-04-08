@@ -18,17 +18,17 @@ public class Tablero {
     private boolean turnoBot = true;
 
     //Instancia de la lista enlazada
-    ListaEnlazada listaEnlazada = new ListaEnlazada();
+    private ListaEnlazada listaEnlazada = new ListaEnlazada();
 
-    ListaEnlazada listaGeneral = new ListaEnlazada();
+    private ListaEnlazada listaGeneral = new ListaEnlazada();
 
 
     //Cantidad de minas
-    int cantidadMinas;
+    private final int cantidadMinas;
 
     //Filas y columnas
-    int numFilas = 8;
-    int numColumnas = 8;
+    private final int numFilas = 8;
+    private final int numColumnas = 8;
 
     //Matriz del tablero de Celdas
     Nodo[][] matrizTablero = new Nodo[numFilas][numColumnas];
@@ -143,10 +143,10 @@ public class Tablero {
         //Se crean las minas
         crearPistas();
 
-        listaEnlazada.mostrarElementos();
+        //listaEnlazada.mostrarElementos();
         listaGeneral = listaEnlazada;
         System.out.println("----------------------------------------------------------");
-        listaGeneral.mostrarElementos();
+        //listaGeneral.mostrarElementos();
 
 
     }
@@ -211,15 +211,22 @@ public class Tablero {
 
         Nodo nodoSeleccionado;
 
-        //Se selecciona de forma aleatoria un elemento de la lista general
+        int iRandom,jRandom;
 
+        //Se selecciona de forma aleatoria un elemento de la lista general
         do {
-            int iRandom = (int) ((Math.random() * (7)) + 0);  //Indice i aleatorio
-            int jRandom = (int) ((Math.random() * (7)) + 0);  //Indice j aleatorio
+            iRandom = (int) ((Math.random() * (7)) + 0);  //Indice i aleatorio
+            jRandom = (int) ((Math.random() * (7)) + 0);  //Indice j aleatorio
 
             nodoSeleccionado = listaGeneral.encontrarElemento(iRandom, jRandom);
 
         } while (nodoSeleccionado == null);
+
+        //Mostrar cual fue el elemento según el índice que fue elegido
+        juego.setLabelCeldaClickBot("i: " + nodoSeleccionado.getDato().getI() + "-" + "j: " + nodoSeleccionado.getDato().getJ());
+
+        //Accion del Nodo
+        nodoSeleccionado.getDato().fire();
 
         //System.out.println("\n" + nodoSeleccionado.getDato());
         System.out.println("i: " + nodoSeleccionado.getDato().getI() + " - j: " + nodoSeleccionado.getDato().getJ());
@@ -238,10 +245,15 @@ public class Tablero {
                 //Si está revelada elimine ese Nodo del tablero
                 if (matrizTablero[i][j].getDato().isEstaRevelada()){
                     listaGeneral.eliminarNodo(matrizTablero[i][j]);
+
                 }
 
             }
         }
+        //Muestra solo los Nodos con celdas sin revelar
+        listaGeneral.mostrarElementos();
+        //Tamaño de la lista General
+        System.out.println(listaGeneral.getSize());
 
     }
 
@@ -406,7 +418,7 @@ public class Tablero {
     }
 
     //Revela de forma recursiva las Celdas que no poseen pistas
-    public void revelarCeldasSinPistas(int fila, int columnas){
+    private void revelarCeldasSinPistas(int fila, int columnas){
 
         if (fila < 0 || columnas < 0 || fila >= numFilas || columnas >= numColumnas) {  //Si está fuera del tablero retorne nada
             return;

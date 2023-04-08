@@ -29,6 +29,7 @@ public class ListaEnlazada {
         if (this.head == null){
             this.head = dato;
             this.last = dato;
+            this.size++;
         }else {
 
             //Instancia de un Nodo temporal
@@ -53,29 +54,23 @@ public class ListaEnlazada {
         Nodo nodoTemp = this.head;  //Se crea un nodo temporal para recorrer la lista
         Nodo nodoReferenciaAnterior = null;
 
-        while (true){
-
-            //Si el current es igual al objeto a eliminar y si es el head
-            if (nodoTemp.getDato() == nodoEliminar.getDato() && nodoEliminar == this.head){
-                this.head = this.head.getNext();
-                this.size--;
-            }
-            //Si el current es igual al objeto a eliminar
-            else if (nodoTemp.getDato() == nodoEliminar.getDato()){
-                nodoReferenciaAnterior.setNext(nodoTemp.getNext());
-                this.size--;
-                break;
-
-
-            }else {
-
-                nodoReferenciaAnterior = nodoTemp;  //El anterior pasa a ser el nodo temporal
-                nodoTemp = nodoTemp.getNext();  //Nodo temporal pasa a ser el Nodo al que esta apuntando
-
-            }
-
+        while (nodoTemp != null && nodoTemp.getDato() != nodoEliminar.getDato()){
+            nodoReferenciaAnterior = nodoTemp;
+            nodoTemp = nodoTemp.getNext();
         }
 
+
+        if (nodoTemp != null) {
+            //Si el head es igual al objeto a eliminar
+            if (nodoReferenciaAnterior == null) {
+                this.head = nodoTemp.getNext();
+                this.size--;
+            }
+            else  {
+                nodoReferenciaAnterior.setNext(nodoTemp.getNext());
+                this.size--;
+            }
+        }
     }
 
     public void mostrarElementos(){
@@ -90,6 +85,7 @@ public class ListaEnlazada {
 
         while (current != null){
 
+            System.out.println(current.getDato());
 
             //Muestra en forma de filas y columnas las celdas que contienen pistas
             /*
