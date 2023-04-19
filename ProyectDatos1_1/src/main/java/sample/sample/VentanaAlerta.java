@@ -8,33 +8,36 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class VentanaPerder {
+public class VentanaAlerta {
     /**
-     * Muestra todos los elementos graficos de la interfaz
-     * @param stagePanelJuego es el escenario del "Juego"
+     * Metodo que genera una ventana donde se mostrará la alerta.
+     * @param title Título de la ventana generada.
+     * @param text Descripción de la ventana.
      */
 
     //Código basado en el siguiente video: https://www.youtube.com/watch?v=SpL3EToqaXA
-    public static void display(Stage stagePanelJuego,Stage stageJuego) {
+
+    /**
+     * Muestra una ventana de alerta al usuario.
+     * @param title Título de la ventana.
+     * @param text Texto que será mostrado en la ventana.
+     */
+    public void display(String title,String text) {
         Stage stage = new Stage();
 
         stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setTitle("Haz perdido");
+        stage.setTitle(title);
 
         //LABEL
         Label mensaje = new Label();
-        mensaje.setText("Seleccionaste una mina, perdiste");
+        mensaje.setText(text);
         mensaje.setTranslateY(-20.0);
 
         //BUTTON
         Button closeButton = new Button();
-        closeButton.setText("Cerrar");
+        closeButton.setText("OK");
         closeButton.setTranslateY(25);
-        closeButton.setOnAction(e -> {
-            stage.close();
-            stagePanelJuego.close();
-            stageJuego.close();
-        });
+        closeButton.setOnAction(e -> stage.close());
 
         StackPane canva = new StackPane();
         canva.getChildren().addAll(
@@ -48,6 +51,16 @@ public class VentanaPerder {
         stage.showAndWait();
 
 
+    }
+
+    /**
+     * Método que al ser ejecutado cierra la Ventana donde se está jugando
+     * @param stage Escenario donde están cargados los elementos gráficos
+     */
+    public void cerrarVentana(Stage stage){
+        System.out.println("Termina el juego");
+
+        stage.close();
     }
 
 }

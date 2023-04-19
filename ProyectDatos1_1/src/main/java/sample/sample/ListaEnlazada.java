@@ -1,28 +1,35 @@
 package sample;
 
+/**
+ * Objeto ListaEnlazada
+ */
 public class ListaEnlazada {
 
     private Nodo head;
     private Nodo last;
     private int size;
 
-    //Constructor
+    /**
+     * Constructor del Objeto
+     */
     public ListaEnlazada() {
         this.head = null;
         this.size = 0;
         this.last = null;
     }
 
-    public boolean estaVacia() {
-        return this.head == null;
-    }
-
-    //Devuelve el tamaño de la lista
+    /**
+     * Método que devuelve el tamaño actual de la ListaEnlazada
+     * @return Int del tamaño de la ListaEnlazada
+     */
     public int getSize() {
         return this.size;
     }
 
-    //Inserta un elemento al principio de la lista
+    /**
+     * Método que inserta un elemento al final de la ListaEnlazada
+     * @param dato Es el nuevo Nodo que será añadido a la lista
+     */
     public void insertarNodo(Nodo dato) {
 
         //Si la lista esta vacia, el head y el last tendrán el valor del primer dato ingresado
@@ -49,7 +56,10 @@ public class ListaEnlazada {
         }
     }
 
-    //Elimina un Nodo en cualquier parte de la lista
+    /**
+     * Método que busca un Nodo en concreto y lo elimina de la ListaEnlazada
+     * @param nodoEliminar Es el nodo que se desea eliminar de la ListaEnlazada
+     */
     public void eliminarNodo(Nodo nodoEliminar){
         Nodo nodoTemp = this.head;  //Se crea un nodo temporal para recorrer la lista
         Nodo nodoReferenciaAnterior = null;
@@ -73,6 +83,9 @@ public class ListaEnlazada {
         }
     }
 
+    /**
+     * Muestra todos los elementos de la ListaEnlazada
+     */
     public void mostrarElementos(){
 
         /*
@@ -81,30 +94,22 @@ public class ListaEnlazada {
 
         Nodo current = this.head;  //Se le asigna al current el valor del primer elemento de la lista
 
-        int i = 0;
-
         while (current != null){
 
             System.out.println(current.getDato());
 
-            //Muestra en forma de filas y columnas las celdas que contienen pistas
-            /*
-            if (i < 8){
-                System.out.print(current.getDato().getIdentificador());
-            }else if (i == 8){
-                i = 0;
-                System.out.println("\n");
-            }*/
-
-            i ++;
 
             current = current.getNext();  //Se asigna que el current sea el siguiente del mismo
         }
 
-
-
     }
 
+    /**
+     * Método que busca un elemento de la matriz por medio de los indices
+     * @param i Indice de las filas
+     * @param j Indice de las columnas
+     * @return Devuelve el elemento que se desea encontrar
+     */
     public Nodo encontrarElemento(int i,int j){
 
         //El current será igual que el primer elemento de la lista
@@ -114,19 +119,15 @@ public class ListaEnlazada {
         while (current != null){
 
             //Si el elemento tiene los mismos índices ingresados
-            if (current.getDato().getI() == i || current.getDato().getJ() == j)
+            if (current.getDato().getI() == i && current.getDato().getJ() == j)
                 break;  //Rompe el ciclo y va al return
 
             current = current.getNext();  //Se recorre la lista enlazada
 
         }
 
-        //Devuelve el Nodo que será seleccionado
         return current;  //Devuelve el elemento que coincide
 
     }
 
-    public Nodo getHead() {
-        return head;
-    }
 }

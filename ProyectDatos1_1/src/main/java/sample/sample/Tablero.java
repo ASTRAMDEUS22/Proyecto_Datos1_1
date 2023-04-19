@@ -1,17 +1,33 @@
 package sample;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 
 import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+import org.firmata4j.IODevice;
+import org.firmata4j.IOEvent;
+import org.firmata4j.Pin;
+import org.firmata4j.PinEventListener;
+import org.firmata4j.firmata.FirmataMessageFactory;
+import org.firmata4j.firmata.FirmataDevice;
 
-public class Tablero {
+
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Random;
+
+public class Tablero implements PinEventListener {
 
     //Constructor del tablero
-    public Tablero(int cantidadMinas) {
+    public Tablero(int cantidadMinas, Stage stage, IODevice placaArduino) {
         //System.out.println("1");
         this.cantidadMinas = cantidadMinas;
+        this.stageJuego = stage;
+        this.placaArduino = placaArduino;
     }
 
+    Stage stageJuego;
     Juego juego = new Juego();
 
     private boolean turnoJugador = false;
@@ -22,20 +38,89 @@ public class Tablero {
 
     private ListaEnlazada listaGeneral = new ListaEnlazada();
 
+    private static int i;
+    private static int j;
+
 
     //Cantidad de minas
-    private final int cantidadMinas;
+    private int cantidadMinas;
+
+    //Minas faltantes
+    private int minasFaltantes = cantidadMinas;
 
     //Filas y columnas
     private final int numFilas = 8;
     private final int numColumnas = 8;
 
+    IODevice placaArduino;
+
     //Matriz del tablero de Celdas
     Nodo[][] matrizTablero = new Nodo[numFilas][numColumnas];
+
+    //PulseCounter counter;
+
+    @Override
+    public void onModeChange(IOEvent ioEvent){
+    }
+
+    /**
+     * Detecta los eventos enviados desde el Arduino a Java
+     * @param ioEvent Almacena el evento registrado.
+     */
+    @Override
+    public void onValueChange(IOEvent ioEvent){
+        var eventoBoton = ioEvent.getPin();
+
+        int iAnterior = i,jAnterior = j;
+
+
+        if (eventoBoton.getValue() == 1){  //Si el boton es presionado
+            if (eventoBoton.getIndex() == 12){
+                if (j - 1 >= 0) {  //Si J no se fue al lado negativo, disminúyala
+                    j--;
+                }
+            }else if (eventoBoton.getIndex() == 11){
+                if (j + 1 < numColumnas) {  //Si J no se fue del tablero, auméntela
+                    j++;
+                }
+            }else if (eventoBoton.getIndex() == 10){
+                if (i - 1 >= 0){//Si I no se fue al lado negativo, disminúyala
+                    i--;
+                }
+            }else if (eventoBoton.getIndex() == 9){
+                if (i + 1 < numFilas) {  //Si I no se fue del tablero, auméntela
+                    i++;
+                }
+            }else if (eventoBoton.getIndex() == 8){
+                if (eventoBoton.getValue() == 1){  //Boton presionado
+                    Platform.runLater(() ->{
+                        matrizTablero[i][j].getDato().fire();
+                    });
+                }
+            }
+            if (matrizTablero[iAnterior][jAnterior].getDato().isTieneBandera()){
+                matrizTablero[iAnterior][jAnterior].getDato().setStyle("-fx-background-color: #de00ff");
+            }else {
+            matrizTablero[iAnterior][jAnterior].getDato().setStyle("-fx-border-color: #000");
+            }
+            matrizTablero[i][j].getDato().setStyle("-fx-border-color: #f50000");
+
+            System.out.println("I: " + i + " J: " + j);
+            System.out.println("---------------------");
+
+        }
+
+
+    }
+
+
+
 
     //Panel para el Jugador y el Bot Dummy
     public void crearPanelJuego(StackPane canva, int xCoords, int yCoords) {
         int xCoordsPrime = xCoords;
+
+
 
         //Recorrer la matriz y añadir los elementos
         for (int i = 0; i < numFilas; i++) {
@@ -57,8 +142,20 @@ public class Tablero {
                 celda.setTranslateY(yCoords);
 
                 //Accionar la celda
-                celda.setOnAction(e -> estarMinadoDummy(e, nodo));
-                celda.setOnContextMenuRequested(e -> celda.crearBandera());
+                celda.setOnAction(e -> {  //Este try catch fue producto de añadir el throw exeption del metodo estarMinadoDummy
+                    try {
+                        estarMinadoDummy( nodo);
+                    } catch (IOException | InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
+                celda.setOnContextMenuRequested(e -> {
+                    try {
+                        celda.crearBandera(placaArduino);
+                    } catch (IOException | InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
 
                 //Asignarle el dato que a a guardar
                 nodo.setDato(celda);
@@ -87,6 +184,13 @@ public class Tablero {
     }
 
     //Panel para el Bot Advanced
+
+    /**
+     * Crea el tablero pero con Nodos enlazados
+     * @param canva Lugar donde se agregan elementos gráficos
+     * @param xCoords Ubicación en el canva
+     * @param yCoords Ubicación en el canva
+     */
     public void crearPanelJuegoNodos(StackPane canva, int xCoords, int yCoords) {
         int xCoordsPrime = xCoords;
 
@@ -110,14 +214,26 @@ public class Tablero {
                 celda.setTranslateY(yCoords);
 
                 //Accionar la celda
-                celda.setOnAction(e -> estarMinadoAdvanced(e,nodo));  //Implementar después
-                celda.setOnContextMenuRequested(e -> celda.crearBandera());
+                celda.setOnAction(e -> {
+                    try {
+                        estarMinadoAdvanced(nodo);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });  //Implementar después
+                celda.setOnContextMenuRequested(e -> {
+                    try {
+                        celda.crearBandera(placaArduino);
+                    } catch (IOException | InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
 
                 //Se asigna el dato que va a guardar el Nodo
                 nodo.setDato(celda);
 
                 //Enlazar Nodos e incrementar el tamaño de la lista
-                listaEnlazada.insertarNodo(nodo);
+                listaGeneral.insertarNodo(nodo);
 
 
 
@@ -140,18 +256,22 @@ public class Tablero {
         //Se crean las minas
         crearMinas(cantidadMinas);
 
-        //Se crean las minas
+        //Se crean las pistas
         crearPistas();
 
         //listaEnlazada.mostrarElementos();
-        listaGeneral = listaEnlazada;
+        //listaGeneral = listaEnlazada;
+        listaGeneral.mostrarElementos();
         System.out.println("----------------------------------------------------------");
-        //listaGeneral.mostrarElementos();
 
 
     }
 
+    /**
+     * Asigna los turnos del bot dummy
+     */
     private void asignarTurnosDummy(){
+
 
         if (turnoBot){
             turnoJugador = true;
@@ -167,7 +287,10 @@ public class Tablero {
 
     }
 
-    private void asignarTurnosAdvanced(){
+    /**
+     * Asigna los turnos en el bot avanzado
+     */
+    private void asignarTurnosAdvanced() {
 
         if (turnoBot){
             turnoJugador = true;
@@ -185,11 +308,21 @@ public class Tablero {
 
 
     //Algoritmo del Bot dummy
+
+    /**
+     * Algoritmo del bot dummy
+     */
     private void algoritmoDummyBot(){
 
+        int iRandom,jRandom,max=7,min=0;
+
         while (true) {
-            int iRandom = (int) ((Math.random() * (7)) + 0);  //Indice i aleatorio
-            int jRandom = (int) ((Math.random() * (7)) + 0);  //Indice j aleatorio
+            Random numRandomI = new Random();
+            Random numRandomJ = new Random();
+
+            iRandom = numRandomI.nextInt((max - min) + 1) + min;
+            jRandom = numRandomJ.nextInt((max - min) + 1) + min;
+
             if (!matrizTablero[iRandom][jRandom].getDato().isEstaRevelada()) {  //Solo si la celda no se ha revelado
 
                 matrizTablero[iRandom][jRandom].getDato().fire();  //Hace la acción de clicar
@@ -205,40 +338,51 @@ public class Tablero {
         }
     }
 
+    /**
+     * Intento del algoritmo del bot Advanced
+     */
     private void algoritmoAdvancedBot(){
         //Se actualiza la lista enlazada general
         actualizarListaGeneral();
 
         Nodo nodoSeleccionado;
 
-        int iRandom,jRandom;
+        int iRandom,jRandom,max = 7,min = 0;
 
         //Se selecciona de forma aleatoria un elemento de la lista general
         do {
-            iRandom = (int) ((Math.random() * (7)) + 0);  //Indice i aleatorio
-            jRandom = (int) ((Math.random() * (7)) + 0);  //Indice j aleatorio
 
+            Random numRandomI = new Random();  //Nuevo número aleatorio
+            Random numRandomJ = new Random();  //Nuevo número aleatorio
+
+            //Fórmula para obtener un número aleatorio en X rango de valores
+            iRandom = numRandomI.nextInt((max - min) + 1) + min;
+            jRandom = numRandomJ.nextInt((max - min) + 1) + min;
+
+            //Teniendo los índices aleatorios se busca el elemento en la lista general
             nodoSeleccionado = listaGeneral.encontrarElemento(iRandom, jRandom);
 
         } while (nodoSeleccionado == null);
 
-        //Mostrar cual fue el elemento según el índice que fue elegido
+        //Mostrar cuál fue el elemento según el índice que fue elegido
         juego.setLabelCeldaClickBot("i: " + nodoSeleccionado.getDato().getI() + "-" + "j: " + nodoSeleccionado.getDato().getJ());
 
-        //Accion del Nodo
+        //Acción del clicar
         nodoSeleccionado.getDato().fire();
 
         //System.out.println("\n" + nodoSeleccionado.getDato());
         System.out.println("i: " + nodoSeleccionado.getDato().getI() + " - j: " + nodoSeleccionado.getDato().getJ());
         System.out.println("Iden: " + nodoSeleccionado.getDato().getIdentificador() + " NumPistas: " + nodoSeleccionado.getDato().getNumPistas());
 
-
-
     }
 
+
+    /**
+     * Actualiza los elementos de la lista general
+     */
     private void actualizarListaGeneral(){
 
-        //Se recorre el tablero buscando celdas reveladas eliminandolas de la lista general
+        //Se recorre el tablero buscando celdas reveladas eliminándolas de la lista general
         for (int i = 0;i < numFilas;i++){
             for (int j = 0; j < numColumnas;j++){
 
@@ -259,37 +403,80 @@ public class Tablero {
 
 
     //Metodo que comprobará si la Celda posee una mina o no para el bot Dummy
-    private void estarMinadoDummy(ActionEvent event, Nodo nodoCelda) {
 
+    /**
+     * Comprueba la existencia de una mina en el Tablero del bot dummy
+     * @param nodoCelda Celda donde ocurre el evento
+     * @throws IOException IOException
+     * @throws InterruptedException InterruptedException
+     */
+    private void estarMinadoDummy(Nodo nodoCelda) throws IOException, InterruptedException {
+        VentanaAlerta ventanaAlerta = new VentanaAlerta();
+        var buzzerPin6 = placaArduino.getPin(6);  //Buzzer del PIN 6
+        buzzerPin6.setMode(Pin.Mode.OUTPUT);
         //Si el identificador de la Celda corresponde a una mina, mostrar que el jugador o el bot perdió
         if (nodoCelda.getDato().getIdentificador() == -1) {
             nodoCelda.getDato().setText("*");
-            VentanaAlerta.display("Alerta","Se ha pisado una mina, perdiste");
+
+            buzzerPin6.setValue(1);  //Enciende el buzzer
+
+
+            Thread.sleep(250);
+
+            buzzerPin6.setValue(0);  //Apaga el buzzer
+
+            Thread.sleep(250);
+
+            buzzerPin6.setValue(1);  //Enciende el buzzer
+
+
+            Thread.sleep(250);
+
+            buzzerPin6.setValue(0);  //Apaga el buzzer
+
+            ventanaAlerta.display("Alerta","Se ha pisado una mina, perdiste");
+            //ventanaAlerta.cerrarVentana(stageJuego);
 
         } else {
 
             if (!nodoCelda.getDato().isEstaRevelada()) {
                 revelarCeldasSinPistas(nodoCelda.getDato().getI(),nodoCelda.getDato().getJ());
-                //System.out.println(matrizTablero[nodoCelda.getDato().getI()][nodoCelda.getDato().getJ()].getDato().getNumPistas());
+
+                buzzerPin6.setValue(1);  //Enciende el buzzer
+
+
+                Thread.sleep(250);
+
+                buzzerPin6.setValue(0);  //Apaga el buzzer
+
                 asignarTurnosDummy();
             }
+
         }
 
     }
 
     //Metodo que comprobará si la Celda posee una mina o no para el bot Advanced
-    private void estarMinadoAdvanced(ActionEvent event, Nodo nodoCelda) {
+
+    /**
+     * Comprueba la existencia de una mina en el Tablero del bot dummy
+     * @param nodoCelda Celda donde ocurre el evento
+     * @throws IOException IOException
+     */
+    private void estarMinadoAdvanced( Nodo nodoCelda) throws IOException {
+        VentanaAlerta ventanaAlerta = new VentanaAlerta();
 
         //Si el identificador de la Celda corresponde a una mina, mostrar que el jugador o el bot perdió
         if (nodoCelda.getDato().getIdentificador() == -1) {
             nodoCelda.getDato().setText("*");
-            VentanaAlerta.display("Alerta","Se ha pisado una mina, perdiste");
+            ventanaAlerta.display("Alerta","Se ha pisado una mina, perdiste");
+            ventanaAlerta.cerrarVentana(stageJuego);
+
 
         } else {
 
             if (!nodoCelda.getDato().isEstaRevelada()) {
                 revelarCeldasSinPistas(nodoCelda.getDato().getI(),nodoCelda.getDato().getJ());
-                //System.out.println(matrizTablero[nodoCelda.getDato().getI()][nodoCelda.getDato().getJ()].getDato().getNumPistas());
                 asignarTurnosAdvanced();
             }
         }
@@ -298,6 +485,11 @@ public class Tablero {
 
 
     //Crear las minas en los tableros
+
+    /**
+     * Crea las minas en el tablero
+     * @param numMinas minas ingresadas por el jugador
+     */
     private void crearMinas(int numMinas){
         //Minas creadas en el Tablero
         int minasGeneradas = 0;
@@ -320,7 +512,7 @@ public class Tablero {
                     if (numRandom >= 0.8) {
 
                         matrizTablero[i][j].getDato().setIdentificador(-1);
-                        //matrizTablero[i][j].getDato().setText("*");
+                        //matrizTablero[i][j].getDato().setText("*");  //Testeo para ver minas
 
                         //Incrementa el total de minas generadas en el tablero
                         minasGeneradas = minasGeneradas + 1;
@@ -332,6 +524,10 @@ public class Tablero {
     }
 
     //Crear las pistas alrededor de las minas
+
+    /**
+     * Crea las pistas alrededor de las Celdas
+     */
     private void crearPistas() {
 
         //System.out.printf("Entró");
@@ -418,6 +614,12 @@ public class Tablero {
     }
 
     //Revela de forma recursiva las Celdas que no poseen pistas
+
+    /**
+     * Revela las casillas sin pistas o minas
+     * @param fila filas del tablero
+     * @param columnas columnas del tablero
+     */
     private void revelarCeldasSinPistas(int fila, int columnas){
 
         if (fila < 0 || columnas < 0 || fila >= numFilas || columnas >= numColumnas) {  //Si está fuera del tablero retorne nada
@@ -452,5 +654,37 @@ public class Tablero {
         }
 
 
+    }
+
+    /**
+     * Devuelve I
+     * @return int I
+     */
+    public static int getI() {
+        return i;
+    }
+
+    /**
+     * Asigna I
+     * @param i int I
+     */
+    public static void setI(int i) {
+        Tablero.i = i;
+    }
+
+    /**
+     * Obtiene J
+     * @return Int J
+     */
+    public static int getJ() {
+        return j;
+    }
+
+    /**
+     * Asigna J
+     * @param j int J
+     */
+    public static void setJ(int j) {
+        Tablero.j = j;
     }
 }

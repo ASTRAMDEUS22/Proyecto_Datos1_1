@@ -1,5 +1,10 @@
 package sample;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import org.firmata4j.IODevice;
+import org.firmata4j.Pin;
+
+import java.io.IOException;
 
 /**
  * Objeto que hereda las propiedades de un boton de JavaFX.
@@ -12,6 +17,11 @@ public class Celda extends Button {
     private int i;
     private int j;
     private boolean estaRevelada = false;
+    private int flag = 0;
+    private boolean tieneBandera = false;
+
+    //Instancia del Objeto
+    Juego juego = new Juego();
 
 
     /**
@@ -30,7 +40,7 @@ public class Celda extends Button {
 
     /**
      * Devuelve el número con el que se identifica la Celda.
-     * @return devuelve el Int del indicador.
+     * @return número con el que se identifica la Celda
      */
     public int getIdentificador() {
         return identificador;
@@ -55,17 +65,46 @@ public class Celda extends Button {
      * Hace que el objeto Celda muestre de forma textual el valor total de Pistas que guarda.
      */
     public void revelarPista(){
-        //if (numPistas != 0) {
-            setText(String.valueOf(numPistas));
-        //}
+        setText(String.valueOf(numPistas));
     }
 
     /**
-     * Crea una bandera que marca la ubicación de una posible mina.
+     * Cambia el estilo de la Celda para simular la colocación de una mina
      */
-    public void crearBandera(){
-        if (!estaRevelada) {
-            setStyle("-fx-background-color: #de00ff");
+    public void crearBandera(IODevice placaArduino) throws IOException, InterruptedException {
+
+        var LED = placaArduino.getPin(7);
+        LED.setMode(Pin.Mode.OUTPUT);
+
+        if (flag == 0) {  //Crear la bandera
+
+            if (!estaRevelada) {
+                setStyle("-fx-background-color: #de00ff");
+                this.tieneBandera = true;
+                getStyleClass().add("inmutable");
+                flag = 1;
+                juego.disminuirMinas();
+
+
+                LED.setValue(1);  //Encender el LED
+                Thread.sleep(500);  //Esperar un segundo y 200 milisegundos
+                LED.setValue(0);  //Apagar el LED
+
+
+                System.out.println("Se encendió el LED");
+
+            }
+
+        }else {  //Eliminar la bandera
+            if (!estaRevelada){
+                setStyle("-fx-border-color: black");
+                this.tieneBandera = false;
+                flag = 0;
+                juego.aumentarMinas();
+
+
+
+            }
         }
     }
 
@@ -107,5 +146,13 @@ public class Celda extends Button {
      */
     public void setEstaRevelada(boolean estaRevelada) {
         this.estaRevelada = estaRevelada;
+    }
+
+    /**
+     * Devuelve la existencia de la bandera en la Celda
+     * @return Bool de existencia de una Bandera
+     */
+    public boolean isTieneBandera() {
+        return tieneBandera;
     }
 }
